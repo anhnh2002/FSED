@@ -70,14 +70,17 @@ class Exemplars():
                 #     break
             for l, reps in rep_dict.items():
                 reps = torch.stack(reps)
-                radius = torch.mean(torch.var(reps, dim=0)) if reps.shape[0] > 1 else torch.tensor(0).to(device)
+                radius = torch.mean(torch.var(reps, dim=0)) if reps.shape[0] > 1 else torch.tensor(0)
+                radius = radius.to("cuda:0")
                 # dt, lb, sp = zip(*data_dict[l])
                 data_ls = data_dict[l]
+                # print(f"first data_ls: {data_ls}")
                 if exemplar_num > reps.size(0): # if reps num is not enough, up sampling 
                     repeat_times = int(exemplar_num / reps.size(0)) + 1
                     reps = reps.repeat(repeat_times, 1)
                     data_ls = data_ls * repeat_times
-                data_ls = np.asarray(data_ls)
+                # print(f"second data_ls: {data_ls}")
+                # data_ls = np.asarray(data_ls)
                 prototype_rep = reps.mean(0)
                 dist = torch.sqrt(torch.sum(torch.square(prototype_rep - reps), dim=1))
                 reps_num = exemplar_num
@@ -86,13 +89,20 @@ class Exemplars():
                 # data_topk = dt[topk_dist_idx]
                 # label_topk = lb[topk_dist_idx]
                 # span_topk = sp[topk_dist_idx]
-                data_topk = data_ls[list(topk_dist_idx)]
+                exemplar_x, exemplar_y, exemplar_mask, exemplar_span = [], [], [], []
+                for idx in list(topk_dist_idx):
+                    exemplar_x.append(data_ls[idx][0])
+                    exemplar_y.append(data_ls[idx][1])
+                    exemplar_mask.append(data_ls[idx][2])
+                    exemplar_span.append(data_ls[idx][3])
+
+
                 # self.radius.append(np.trace(cov))
-                self.exemplars_x.append(list(data_topk[:, 0]))
-                self.exemplars_y.append(list(data_topk[:, 1]))
+                self.exemplars_x.append(list(exemplar_x))
+                self.exemplars_y.append(list(exemplar_y))
                 # self.exemplars_y.append(list(data_topk[:, 1]))
-                self.exemplars_mask.append(list(data_topk[:, 2]))
-                self.exemplars_span.append(list(data_topk[:, 3]))
+                self.exemplars_mask.append(list(exemplar_mask))
+                self.exemplars_span.append(list(exemplar_span))
                 self.radius[l] = radius
         
     def build_stage_loader(self, dataset: MAVEN_Dataset, collate_fn=lambda x:x):

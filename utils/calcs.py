@@ -19,31 +19,31 @@ class Calculator():
         return f1_score(self.label.detach().numpy(), self.predict.detach().numpy(),average='macro')
 
     def by_class(self, learned_labels=None):
-        match = (self.predict == self.label).float()
+        match = (self.predict == self.label).to(torch.bfloat16)
         nlabels = int(max(torch.max(self.label).item(), torch.max(self.predict).item()))
         bc = {}
         ag = 0; ad = 0; am = 0
         for label in range(1, nlabels+1):
             lg = (self.label==label); ld = (self.predict==label)
-            lr = torch.sum(match[lg]) / torch.sum(lg.float())
-            lp = torch.sum(match[ld]) / torch.sum(ld.float())
+            lr = torch.sum(match[lg]) / torch.sum(lg.to(torch.bfloat16))
+            lp = torch.sum(match[ld]) / torch.sum(ld.to(torch.bfloat16))
             lf = 2 * lr * lp / (lr + lp)
             if torch.isnan(lf):
                 bc[label] = (0, 0, 0)
             else:
                 bc[label] = (lp.item(), lr.item(), lf.item())
             if learned_labels is not None and label in learned_labels:
-                ag += lg.float().sum()
-                ad += ld.float().sum()
+                ag += lg.to(torch.bfloat16).sum()
+                ad += ld.to(torch.bfloat16).sum()
                 am += match[lg].sum()
         if learned_labels is None:
             ag = (self.label!=0); ad = (self.predict!=0)
-            sum_ad = torch.sum(ag.float())
+            sum_ad = torch.sum(ag.to(torch.bfloat16))
             if sum_ad == 0:
                 ap = ar = 0
             else:
-                ar = torch.sum(match[ag]) / torch.sum(ag.float())
-                ap = torch.sum(match[ad]) / torch.sum(ad.float())
+                ar = torch.sum(match[ag]) / torch.sum(ag.to(torch.bfloat16))
+                ap = torch.sum(match[ad]) / torch.sum(ad.to(torch.bfloat16))
         else:
             if ad == 0:
                 ap = ar = 0

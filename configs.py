@@ -10,7 +10,7 @@ def parse_arguments():
     parser.add_argument('--save-dir', default='')
     parser.add_argument('--resume', default='')
     parser.add_argument('--parallel', default='single', choices=['single', 'DP', 'DDP'])
-    parser.add_argument('--device_ids', default='0,1')
+    parser.add_argument('--device_ids', default='0')
     parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--world-size", type=int, default=4)
     parser.add_argument("--amp", action='store_true') 
@@ -26,7 +26,9 @@ def parse_arguments():
     parser.add_argument('--task-num', default=5, type=int)
     parser.add_argument('--early-stop', action='store_true')
     parser.add_argument('--patience', type=int, default=5)
-    parser.add_argument('--eval_freq', type=int, default=1)
+    parser.add_argument('--eval_freq', type=int, default=1)# my_test
+
+    parser.add_argument('--my-test', action='store_true')
 
     parser.add_argument('--input-map', action='store_true', help="Whether to use input mapping, if False, use span_s to predict trigger type")
     parser.add_argument('--class-num', type=int, default=10)
@@ -36,7 +38,8 @@ def parse_arguments():
     parser.add_argument('--period', type=int, default=10)
     parser.add_argument('--epochs', default=20, type=int) 
     parser.add_argument('--batch-size', default=4, type=int)
-    parser.add_argument('--device', default="cuda:2", help='set device cuda or cpu')
+    parser.add_argument('--device', default="cuda:0", help='set device cuda or cpu')
+    parser.add_argument('--device2', default="cuda:1", help='set device cuda or cpu')
     parser.add_argument('--log', action='store_true') 
     parser.add_argument('--log-name', default='temp')
     parser.add_argument('--data-root', default='./data_incremental', type=str)

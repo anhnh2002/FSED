@@ -7,7 +7,7 @@ from utils.tools import collect_from_json
 import numpy as np
 args = parse_arguments()
 
-
+pad_id = 128001
 
 class MAVEN_Dataset(Dataset):
     def __init__(self, tokens, labels, masks, spans) -> None:
@@ -68,7 +68,7 @@ def collect_dataset(dataset, root, split, label2idx, stage_id, labels):
         #     valid_span = dt['span'].copy()
         #     valid_label = [label2idx[item] if item in label2idx else 0 for item in dt['label']]
             # max_seqlen = 90
-        max_seqlen = args.max_seqlen # 344, 249, 230, 186, 167
+        max_seqlen = int(args.max_seqlen) # 344, 249, 230, 186, 167
         if len(token) >= max_seqlen + 2:
             token_sep = token[-1]
             token = token[:max_seqlen + 1] + [token_sep]
@@ -77,9 +77,12 @@ def collect_dataset(dataset, root, split, label2idx, stage_id, labels):
             for invalid_idx in invalid_span:
                 valid_span.pop(invalid_idx)
                 valid_label.pop(invalid_idx)
+        
+        pad_length = (max_seqlen + 2 - len(token))
         if len(token) < max_seqlen + 2:
-            token = token + [0] * (max_seqlen + 2 - len(token))
-        token_mask = [1 if tkn != 0 else 0 for tkn in token]
+            token = [pad_id] * pad_length + token
+        token_mask = [1 if tkn != pad_id else 0 for tkn in token]
+        token_mask[-1] = 1
             # span_mask = []
             # for i in range(len(token)):
             #     span_mask.append([0, 0])
@@ -89,12 +92,11 @@ def collect_dataset(dataset, root, split, label2idx, stage_id, labels):
         data_tokens.append(token)
         data_labels.append(valid_label)
         data_masks.append(token_mask)
+        valid_span = np.array(valid_span) + pad_length
+        valid_span = valid_span.tolist()
         data_spans.append(valid_span)
-            # data_spans.append(valid_span)
-    if args.my_test:
-        return MAVEN_Dataset(data_tokens[:100], data_labels[:100], data_masks[:100], data_spans[:100]) # TODO: deprecated, used for debugging, not for test!
-    else:
-        return MAVEN_Dataset(data_tokens, data_labels, data_masks, data_spans)
+
+    return MAVEN_Dataset(data_tokens, data_labels, data_masks, data_spans)
 
 
 def collect_exemplar_dataset(dataset, root, split, label2idx, stage_id, labels):
@@ -125,7 +127,7 @@ def collect_exemplar_dataset(dataset, root, split, label2idx, stage_id, labels):
             #     valid_span = dt['span'].copy()
             #     valid_label = [label2idx[item] if item in label2idx else 0 for item in dt['label']]
                 # max_seqlen = 90
-            max_seqlen = args.max_seqlen # 344, 249, 230, 186, 167
+            max_seqlen = int(args.max_seqlen) # 344, 249, 230, 186, 167
             if len(token) >= max_seqlen + 2:
                 token_sep = token[-1]
                 token = token[:max_seqlen + 1] + [token_sep]
@@ -134,9 +136,12 @@ def collect_exemplar_dataset(dataset, root, split, label2idx, stage_id, labels):
                 for invalid_idx in invalid_span:
                     valid_span.pop(invalid_idx)
                     valid_label.pop(invalid_idx)
+            
+            pad_length = (max_seqlen + 2 - len(token))
             if len(token) < max_seqlen + 2:
-                token = token + [0] * (max_seqlen + 2 - len(token))
-            token_mask = [1 if tkn != 0 else 0 for tkn in token]
+                token = [pad_id] * pad_length + token
+            token_mask = [1 if tkn != pad_id else 0 for tkn in token]
+            token_mask[-1] = 1
                 # span_mask = []
                 # for i in range(len(token)):
                 #     span_mask.append([0, 0])
@@ -146,6 +151,8 @@ def collect_exemplar_dataset(dataset, root, split, label2idx, stage_id, labels):
             data_tokens.append(token)
             data_labels.append(valid_label)
             data_masks.append(token_mask)
+            valid_span = np.array(valid_span) + pad_length
+            valid_span = valid_span.tolist()
             data_spans.append(valid_span)
     return MAVEN_Dataset(data_tokens, data_labels, data_masks, data_spans)
                 
@@ -178,7 +185,7 @@ def collect_sldataset(dataset, root, split, label2idx, stage_id, labels):
             #     valid_span = dt['span'].copy()
             #     valid_label = [label2idx[item] if item in label2idx else 0 for item in dt['label']]
                 # max_seqlen = 90
-            max_seqlen = args.max_seqlen # 344, 249, 230, 186, 167
+            max_seqlen = int(args.max_seqlen) # 344, 249, 230, 186, 167
             if len(token) >= max_seqlen + 2:
                 token_sep = token[-1]
                 token = token[:max_seqlen + 1] + [token_sep]
@@ -187,9 +194,12 @@ def collect_sldataset(dataset, root, split, label2idx, stage_id, labels):
                 for invalid_idx in invalid_span:
                     valid_span.pop(invalid_idx)
                     valid_label.pop(invalid_idx)
+            
+            pad_length = (max_seqlen + 2 - len(token))
             if len(token) < max_seqlen + 2:
-                token = token + [0] * (max_seqlen + 2 - len(token))
-            token_mask = [1 if tkn != 0 else 0 for tkn in token]
+                token = [pad_id] * pad_length + token
+            token_mask = [1 if tkn != pad_id else 0 for tkn in token]
+            token_mask[-1] = 1
 
                 # span_mask = []
                 # for i in range(len(token)):
@@ -200,11 +210,13 @@ def collect_sldataset(dataset, root, split, label2idx, stage_id, labels):
             data_tokens.append(token)
             data_labels.append(valid_label)
             data_masks.append(token_mask)
+            valid_span = np.array(valid_span) + pad_length
+            valid_span = valid_span.tolist()
             data_spans.append(valid_span)
-    # if args.my_test:
-    #     return MAVEN_Dataset(data_tokens[:100], data_labels[:100], data_masks[:100], data_spans[:100]) # TODO:test use
-    # else:
-    return MAVEN_Dataset(data_tokens, data_labels, data_masks, data_spans)
+    if args.my_test:
+        return MAVEN_Dataset(data_tokens[:20], data_labels[:20], data_masks[:20], data_spans[:20]) # TODO:test use
+    else:
+        return MAVEN_Dataset(data_tokens, data_labels, data_masks, data_spans)
 
 def collect_eval_sldataset(dataset, root, split, label2idx, stage_id, labels):
     data = collect_from_json(dataset, root, split)
@@ -233,7 +245,7 @@ def collect_eval_sldataset(dataset, root, split, label2idx, stage_id, labels):
         #     valid_span = dt['span'].copy()
         #     valid_label = [label2idx[item] if item in label2idx else 0 for item in dt['label']]
             # max_seqlen = 90
-        max_seqlen = args.max_seqlen # 344, 249, 230, 186, 167
+        max_seqlen = int(args.max_seqlen) # 344, 249, 230, 186, 167
         if len(token) > max_seqlen + 2:
             token_sep = token[-1]
             token = token[:max_seqlen + 1] + [token_sep]
@@ -242,9 +254,12 @@ def collect_eval_sldataset(dataset, root, split, label2idx, stage_id, labels):
             for invalid_idx in invalid_span:
                 valid_span.pop(invalid_idx)
                 valid_label.pop(invalid_idx)
+        
+        pad_length = (max_seqlen + 2 - len(token))
         if len(token) < max_seqlen + 2:
-            token = token + [0] * (max_seqlen + 2 - len(token))
-        token_mask = [1 if tkn != 0 else 0 for tkn in token]
+            token = [pad_id] * pad_length + token
+        token_mask = [1 if tkn != pad_id else 0 for tkn in token]
+        token_mask[-1] = 1
             # span_mask = []
             # for i in range(len(token)):
             #     span_mask.append([0, 0])
@@ -254,81 +269,12 @@ def collect_eval_sldataset(dataset, root, split, label2idx, stage_id, labels):
         data_tokens.append(token)
         data_labels.append(valid_label)
         data_masks.append(token_mask)
+        valid_span = np.array(valid_span) + pad_length
+        valid_span = valid_span.tolist()
         data_spans.append(valid_span)
-            # data_spans.append(valid_span)
+
     if args.my_test:
-        return MAVEN_Dataset(data_tokens[:100], data_labels[:100], data_masks[:100], data_spans[:100]) # TODO:test use
+        return MAVEN_Dataset(data_tokens[:20], data_labels[:20], data_masks[:20], data_spans[:20]) # TODO:test use
     else:
         return MAVEN_Dataset(data_tokens, data_labels, data_masks, data_spans)
 
-
-# def collect_fewshot_dataset(dataset, root, split, labels, label2idx):
-#         # collect instances that have label in the list 'labels' 
-#         data = collect_from_json(dataset, root, split)
-#         data_tokens, data_labels, data_masks, data_spans = [], [], [], []
-#         data_ls = []
-#         for t in data:
-#             task_ls = []
-#             for val in t.values():
-#                 for item in val:
-#                     for lb in item['label']:
-#                         if lb != 0 and lb in labels:
-#                             task_ls.append(item)
-#                             break
-#             data_ls.append(task_ls)
-#         return data_ls    
-
-# def get_data_loaders(dataset, root, streams, batch_size=1):
-#     train_loaders = []
-#     train_ecn_loaders = []
-#     data_train = collect_from_json(dataset, root, 'train') # load dataset
-#     data_dev = collect_from_json(dataset, root, 'dev')
-#     all_labels = []
-#     all_labels = list(set([t for stream in streams for t in stream if t not in all_labels]))
-#     labels = all_labels.copy()
-#     for i, stream in enumerate(streams): # get data from labels for each stream
-#         print(f'loading train instances for stage {i}') 
-#         stream_instances_loader = DataLoader(
-#             dataset=collect_dataset('MAVEN', root, 'train', labels),
-#             batch_size=batch_size,
-#             shuffle=True,
-#             drop_last=False)
-#         print(f"stage {i}: instances num {len(stream_instances_loader)}")
-#         train_loaders.append(stream_instances_loader)
-#         print(f'loading train instances excluding none for stage {i}') 
-#         exclude_none_labels = [t for t in stream if t != 0]
-#         exclude_none_loader = DataLoader(
-#             dataset=collect_dataset('MAVEN', root, 'train', exclude_none_labels),
-#             batch_size=batch_size,
-#             shuffle=True,
-#             drop_last=False)
-#         train_ecn_loaders.append(exclude_none_loader)
-#         print(f"stage {i}: instances num {len(exclude_none_loader)}")
-#         for tp in stream:
-#             if not tp == 0:
-#                 labels.pop(labels.index(tp))
-#     print(f'loading dev instances')
-#     dev_loaders = [DataLoader(
-#             dataset=collect_dataset(data_dev, all_labels),
-#             batch_size=batch_size,
-#             shuffle=True,
-#             drop_last=False)]
-#     print(f'loading test instances')
-
-#     data_test = collect_from_json(dataset, root, 'test')
-#     test_loaders = [DataLoader(
-#             dataset=collect_dataset(data_test, all_labels),
-#             batch_size=batch_size,
-#             shuffle=True,
-#             drop_last=False)]
-#     loaders_dict = {'train': train_loaders, 'train-exclude-none':train_ecn_loaders, 
-#                     'dev': dev_loaders, 'test': test_loaders}
-#     return loaders_dict
-
-
-    
-# def test():
-#     streams = collect_from_json('MAVEN', './data', 'streams')
-#     get_data_loaders('MAVEN', './data', streams)
-# if __name__ == "__main__":
-#     test()
