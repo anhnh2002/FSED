@@ -1,8 +1,8 @@
-for j in 1 2
+for j in 5 10
 do
     for m in 10
     do
-        for n in 0
+        for n in 1 2 3 4
         do
             CUDA_LAUNCH_BLOCKING=1 python train.py \
                 --data-root ./data_incremental \
@@ -12,9 +12,9 @@ do
                 --decay 1e-4 \
                 --no-freeze-bert \
                 --shot-num $j \
-                --batch-size 4 \
+                --batch-size 2 \
                 --device cuda:0 \
-                --device2 cuda:0 \
+                --device2 cuda:1 \
                 --log \
                 --log-dir ./outputs/log_incremental/temp7_submax/first_wo_UCL+TCL/ \
                 --log-name ashuffle_lnone_r5 \

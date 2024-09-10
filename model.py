@@ -16,7 +16,7 @@ class LLM2VecED(nn.Module):
         super().__init__()
         self.backbone = LLM2Vec.from_pretrained(
             "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
-            peft_model_name_or_path="McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised",
+            peft_model_name_or_path="McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
             device_map=device,
             torch_dtype=torch.bfloat16,
             merge_peft=True,
@@ -35,7 +35,7 @@ class LLM2VecED(nn.Module):
     def load_checkpoint(self, cp_path: str):
         self.backbone = LLM2Vec.from_pretrained(
             "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
-            peft_model_name_or_path="McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised",
+            peft_model_name_or_path="McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
             device_map=device,
             torch_dtype=torch.bfloat16,
             merge_peft=True,

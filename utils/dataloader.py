@@ -9,6 +9,12 @@ args = parse_arguments()
 
 pad_id = 128001
 
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained(
+    "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp"
+)
+
 class MAVEN_Dataset(Dataset):
     def __init__(self, tokens, labels, masks, spans) -> None:
         super(Dataset).__init__()
@@ -200,7 +206,8 @@ def collect_sldataset(dataset, root, split, label2idx, stage_id, labels):
                 token = [pad_id] * pad_length + token
             token_mask = [1 if tkn != pad_id else 0 for tkn in token]
             token_mask[-1] = 1
-
+            
+            
                 # span_mask = []
                 # for i in range(len(token)):
                 #     span_mask.append([0, 0])
@@ -210,9 +217,19 @@ def collect_sldataset(dataset, root, split, label2idx, stage_id, labels):
             data_tokens.append(token)
             data_labels.append(valid_label)
             data_masks.append(token_mask)
+            # print("----------------------------")
+            # print(f"old span: {valid_span[0]}")
             valid_span = np.array(valid_span) + pad_length
             valid_span = valid_span.tolist()
             data_spans.append(valid_span)
+
+            # sample_span = valid_span[0]
+            # print(f"new span: {valid_span[0]}")
+            # print(f"trigger: {tokenizer.decode(token[sample_span[0]:sample_span[0] + 1])}")
+            # print(f"token: {token[pad_length:]}")
+            # print(f"label: {valid_label[0]}")
+            # print(f"###########################")
+
     if args.my_test:
         return MAVEN_Dataset(data_tokens[:20], data_labels[:20], data_masks[:20], data_spans[:20]) # TODO:test use
     else:
