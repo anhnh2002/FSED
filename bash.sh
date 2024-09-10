@@ -1,20 +1,20 @@
-for j in 5 10
+for j in 1 2
 do
     for m in 10
     do
-        for n in 1 2 3 4
+        for n in 0
         do
             CUDA_LAUNCH_BLOCKING=1 python train.py \
                 --data-root ./data_incremental \
                 --dataset ACE \
                 --backbone bert-base-uncased \
-                --lr 2e-5 \
+                --lr 1e-5 \
                 --decay 1e-4 \
                 --no-freeze-bert \
                 --shot-num $j \
-                --batch-size 2 \
+                --batch-size 4 \
                 --device cuda:0 \
-                --device2 cuda:1 \
+                --device2 cuda:0 \
                 --log \
                 --log-dir ./outputs/log_incremental/temp7_submax/first_wo_UCL+TCL/ \
                 --log-name ashuffle_lnone_r5 \
@@ -32,7 +32,8 @@ do
                 --tlcl \
                 --ucl \
                 --skip-first-cl ucl+tlcl \
-                --perm-id $n
+                --perm-id $n\
+                --early-stop
         done
     done
 done

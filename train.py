@@ -107,6 +107,7 @@ def train(local_rank, args):
         prev_learned_types = state_dict['prev_learned_types']
     if args.early_stop:
         e_pth = "./outputs/early_stop/" + args.log_name
+        os.makedirs(e_pth, exist_ok=True)
     for stage in task_idx:
         # if stage > 0:
         #     break
